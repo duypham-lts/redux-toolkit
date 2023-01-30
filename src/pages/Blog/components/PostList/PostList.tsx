@@ -4,7 +4,6 @@ import PostItem from '../PostItem'
 
 export const PostList = () => {
   const postList = useAppSelector((state) => state.blog.postList)
-  console.log(postList)
 
   return (
     <div>

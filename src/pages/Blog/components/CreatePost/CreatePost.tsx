@@ -1,6 +1,38 @@
+import { useState } from 'react'
+import { useAppDispatch } from '../../../../hooks/hooks'
+import { Post } from '../../../../types/blog.type'
+import { addPost } from '../../blogSlice'
+
+const initialFormData: Post = {
+  id: '',
+  title: '',
+  featuredImage: '',
+  description: '',
+  published: false,
+  publishDate: ''
+}
+
 export const CreatePost = () => {
+  const [formData, setFormData] = useState<Post>(initialFormData)
+  const dispatch = useAppDispatch()
+
+  const handleChangeInput =
+    (name: keyof Post) => (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
+      setFormData((prev) => ({ ...prev, [name]: event.target.value }))
+    }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const postWithId = {
+      ...formData,
+      id: new Date().toLocaleTimeString()
+    }
+    dispatch(addPost(postWithId))
+    setFormData(initialFormData)
+  }
+
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <div className='mb-6'>
         <label htmlFor='title' className='mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300'>
           Title
@@ -11,6 +43,8 @@ export const CreatePost = () => {
           className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
           placeholder='Title'
           required
+          value={formData.title}
+          onChange={handleChangeInput('title')}
         />
       </div>
       <div className='mb-6'>
@@ -23,6 +57,8 @@ export const CreatePost = () => {
           className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
           placeholder='Url image'
           required
+          value={formData.featuredImage}
+          onChange={handleChangeInput('featuredImage')}
         />
       </div>
       <div className='mb-6'>
@@ -36,6 +72,8 @@ export const CreatePost = () => {
             className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
             placeholder='Your description...'
             required
+            value={formData.description}
+            onChange={handleChangeInput('description')}
           />
         </div>
       </div>
@@ -49,10 +87,20 @@ export const CreatePost = () => {
           className='block w-56 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
           placeholder='Title'
           required
+          value={formData.publishDate}
+          onChange={handleChangeInput('publishDate')}
         />
       </div>
       <div className='mb-6 flex items-center'>
-        <input id='publish' type='checkbox' className='h-4 w-4 focus:ring-2 focus:ring-blue-500' />
+        <input
+          id='publish'
+          type='checkbox'
+          className='h-4 w-4 focus:ring-2 focus:ring-blue-500'
+          checked={formData.published}
+          onChange={(e) => {
+            setFormData((prev) => ({ ...prev, published: e.target.checked }))
+          }}
+        />
         <label htmlFor='publish' className='ml-2 text-sm font-medium text-gray-900'>
           Publish
         </label>
@@ -66,7 +114,7 @@ export const CreatePost = () => {
             Publish Post
           </span>
         </button>
-        <button
+        {/* <button
           type='submit'
           className='group relative mb-2 mr-2 inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-teal-300 to-lime-300 p-0.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-4 focus:ring-lime-200 group-hover:from-teal-300 group-hover:to-lime-300 dark:text-white dark:hover:text-gray-900 dark:focus:ring-lime-800'
         >
@@ -81,7 +129,7 @@ export const CreatePost = () => {
           <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
             Cancel
           </span>
-        </button>
+        </button> */}
       </div>
     </form>
   )

@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { initialPostList } from '../../constants/blog'
 import { RootState } from '../../store'
 import { Post } from '../../types/blog.type'
@@ -14,10 +14,14 @@ const initialState: BlogState = {
 export const blogSlice = createSlice({
   name: 'blog',
   initialState,
-  reducers: {}
+  reducers: {
+    addPost: (state, action: PayloadAction<Post>) => {
+      state.postList.push(action.payload)
+    }
+  }
 })
 
-// export const {} = blogSlice.actions
+export const { addPost } = blogSlice.actions
 
 export const postList = (state: RootState) => state.blog.postList
 
