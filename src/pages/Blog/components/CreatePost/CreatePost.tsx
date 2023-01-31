@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useAppDispatch } from '../../../../hooks/hooks'
+import { useEffect, useState } from 'react'
+import { useAppDispatch, useAppSelector } from '../../../../hooks/hooks'
 import { Post } from '../../../../types/blog.type'
-import { addPost } from '../../blogSlice'
+import { addPost, cancelEditingPost, finishEditingPost } from '../../blogSlice'
 
 const initialFormData: Post = {
   id: '',
@@ -16,6 +16,18 @@ export const CreatePost = () => {
   const [formData, setFormData] = useState<Post>(initialFormData)
   const dispatch = useAppDispatch()
 
+  const isEditingPost = useAppSelector((state) => state.blog.isEditingPost)
+  const editingPost = useAppSelector((state) => state.blog.editingPost)
+
+  useEffect(() => {
+    if (isEditingPost && editingPost) {
+      setFormData(editingPost)
+    } else {
+      setFormData(initialFormData)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditingPost, editingPost])
+
   const handleChangeInput =
     (name: keyof Post) => (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
       setFormData((prev) => ({ ...prev, [name]: event.target.value }))
@@ -23,16 +35,25 @@ export const CreatePost = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const postWithId = {
-      ...formData,
-      id: new Date().toLocaleTimeString()
+    if (isEditingPost) {
+      dispatch(finishEditingPost(formData))
+    } else {
+      const postWithId = {
+        ...formData,
+        id: new Date().toLocaleTimeString()
+      }
+      dispatch(addPost(postWithId))
     }
-    dispatch(addPost(postWithId))
+
     setFormData(initialFormData)
   }
 
+  const handleCancelEditing = () => {
+    dispatch(cancelEditingPost())
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} onReset={handleCancelEditing}>
       <div className='mb-6'>
         <label htmlFor='title' className='mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300'>
           Title
@@ -106,30 +127,36 @@ export const CreatePost = () => {
         </label>
       </div>
       <div>
-        <button
-          className='group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 p-0.5 text-sm font-medium text-gray-900 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 group-hover:from-purple-600 group-hover:to-blue-500 dark:text-white dark:focus:ring-blue-800'
-          type='submit'
-        >
-          <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
-            Publish Post
-          </span>
-        </button>
-        {/* <button
-          type='submit'
-          className='group relative mb-2 mr-2 inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-teal-300 to-lime-300 p-0.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-4 focus:ring-lime-200 group-hover:from-teal-300 group-hover:to-lime-300 dark:text-white dark:hover:text-gray-900 dark:focus:ring-lime-800'
-        >
-          <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
-            Update Post
-          </span>
-        </button>
-        <button
-          type='reset'
-          className='group relative mb-2 mr-2 inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-red-200 via-red-300 to-yellow-200 p-0.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-4 focus:ring-red-100 group-hover:from-red-200 group-hover:via-red-300 group-hover:to-yellow-200 dark:text-white dark:hover:text-gray-900 dark:focus:ring-red-400'
-        >
-          <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
-            Cancel
-          </span>
-        </button> */}
+        {!isEditingPost && (
+          <button
+            className='group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 p-0.5 text-sm font-medium text-gray-900 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 group-hover:from-purple-600 group-hover:to-blue-500 dark:text-white dark:focus:ring-blue-800'
+            type='submit'
+          >
+            <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
+              Publish Post
+            </span>
+          </button>
+        )}
+        {isEditingPost && (
+          <>
+            <button
+              type='submit'
+              className='group relative mb-2 mr-2 inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-teal-300 to-lime-300 p-0.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-4 focus:ring-lime-200 group-hover:from-teal-300 group-hover:to-lime-300 dark:text-white dark:hover:text-gray-900 dark:focus:ring-lime-800'
+            >
+              <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
+                Update Post
+              </span>
+            </button>
+            <button
+              type='reset'
+              className='group relative mb-2 mr-2 inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-red-200 via-red-300 to-yellow-200 p-0.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-4 focus:ring-red-100 group-hover:from-red-200 group-hover:via-red-300 group-hover:to-yellow-200 dark:text-white dark:hover:text-gray-900 dark:focus:ring-red-400'
+            >
+              <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
+                Cancel
+              </span>
+            </button>
+          </>
+        )}
       </div>
     </form>
   )
